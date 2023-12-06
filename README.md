@@ -1,7 +1,5 @@
 # Advent of Code 2023
 
-:warning: **WARNING** :warning:: The [days](./days) folder contains spoilers if you haven't already solved the day's puzzle.
-
 ## Solutions
 
 The solution to each day can be found in the [days](./days) folder. :warning:**WARNING**:warning:: That folder contains spoilers.
