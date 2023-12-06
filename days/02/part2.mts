@@ -2,21 +2,25 @@ import assert from "assert";
 import dedent from "dedent";
 import { readDay } from "../../utils/read.mjs";
 
+type Color = "red" | "green" | "blue";
 interface Game {
   id: number;
-  reveals: Array<Record<string, number>>;
+  reveals: Array<Record<Color, number>>;
 }
 
-function possible(game: Game, rules: Record<string, number>): boolean {
-  const colors = Object.keys(rules);
-  for (let color of colors) {
-    for (let reveal of game.reveals) {
-      if ((reveal[color] ?? 0) > rules[color]) {
-        return false;
-      }
-    }
+function power(game: Game): number {
+  let maxRed = 0;
+  let maxGreen = 0;
+  let maxBlue = 0;
+
+  for (let { red, green, blue } of game.reveals) {
+    maxRed = Math.max(red ?? 0, maxRed);
+    maxGreen = Math.max(green ?? 0, maxGreen);
+    maxBlue = Math.max(blue ?? 0, maxBlue);
   }
-  return true;
+
+  console.log(`Game ${game.id}: R=${maxRed}, G=${maxGreen}, B=${maxBlue}`);
+  return maxRed * maxGreen * maxBlue;
 }
 
 function parseId(gameString: string): number {
@@ -28,7 +32,7 @@ function parseId(gameString: string): number {
   return parseInt(matchId[1]);
 }
 
-function parseReveal(revealString: string): Record<string, number> {
+function parseReveal(revealString: string): Record<Color, number> {
   return revealString
     .trim()
     .split(",")
@@ -36,9 +40,9 @@ function parseReveal(revealString: string): Record<string, number> {
     .reduce(
       (record, set) => ({
         ...record,
-        [set[1]]: (record[set[1]] ?? 0) + parseInt(set[0]),
+        [set[1] as Color]: (record[set[1] as Color] ?? 0) + parseInt(set[0]),
       }),
-      {} as Record<string, number>
+      {} as Record<Color, number>
     );
 }
 
@@ -49,14 +53,12 @@ function parseLine(line: string): Game {
   return { id, reveals };
 }
 
-const rules = { red: 12, green: 13, blue: 14 };
 function scoreDoc(doc: string): number {
   return doc
     .split("\n")
     .filter((line) => line)
     .map((line) => parseLine(line))
-    .filter((game) => possible(game, rules))
-    .map((game) => game.id)
+    .map((game) => power(game))
     .reduce((a, b) => a + b);
 }
 
@@ -68,5 +70,5 @@ const score = scoreDoc(dedent`
   Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
 `);
 
-assert(score === 8, "Expected test input to match.");
+assert(score === 2286, "Expected test input to match.");
 console.log(scoreDoc(await readDay(2)));
